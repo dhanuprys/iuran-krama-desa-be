@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('resident_id')->constrained('residents');
+            $table->foreignId('resident_id')->constrained('residents')->onDelete('restrict');
             $table->date('invoice_date');
             $table->decimal('iuran_amount', 10, 2);
             $table->decimal('peturunan_amount', 10, 2);
@@ -23,6 +23,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

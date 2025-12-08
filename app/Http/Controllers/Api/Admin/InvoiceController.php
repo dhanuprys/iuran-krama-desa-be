@@ -1,18 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Models\Resident;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class InvoiceController extends Controller
 {
+    use \App\Traits\ApiResponse;
+
     /**
      * Check if resident already has an invoice for the given month and year
      */
@@ -70,16 +72,7 @@ class InvoiceController extends Controller
         $perPage = min($request->get('per_page', 15), 100); // Max 100 per page
         $invoices = $query->paginate($perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => InvoiceResource::collection($invoices),
-            'pagination' => [
-                'current_page' => $invoices->currentPage(),
-                'last_page' => $invoices->lastPage(),
-                'per_page' => $invoices->perPage(),
-                'total' => $invoices->total(),
-            ]
-        ]);
+        return $this->paginated(new \Illuminate\Http\Resources\Json\ResourceCollection($invoices, InvoiceResource::class));
     }
 
     /**
@@ -110,11 +103,7 @@ class InvoiceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan validasi',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->error('VALIDATION_ERROR', $validator->errors());
         }
 
         $data = $validator->validated();
@@ -122,10 +111,7 @@ class InvoiceController extends Controller
         // Get resident with resident status to get contribution amount
         $resident = Resident::with('residentStatus')->find($data['resident_id']);
         if (!$resident) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Penduduk tidak ditemukan'
-            ], 404);
+            return $this->error('RESOURCE_NOT_FOUND');
         }
 
         // Set iuran_amount from resident's contribution amount
@@ -135,13 +121,9 @@ class InvoiceController extends Controller
         $invoiceDate = Carbon::parse($data['invoice_date']);
         
         if ($this->hasDuplicateMonthlyInvoice($data['resident_id'], $invoiceDate)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Penduduk sudah memiliki invoice untuk bulan ini',
-                'errors' => [
-                    'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
-                ]
-            ], 422);
+            return $this->error('INVOICE_DUPLICATE', [
+                'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
+            ]);
         }
 
         $data['total_amount'] = $data['iuran_amount'] + $data['peturunan_amount'] + $data['dedosan_amount'];
@@ -149,11 +131,7 @@ class InvoiceController extends Controller
 
         $invoice = Invoice::create($data);
 
-        return response()->json([
-            'success' => true,
-                'message' => 'Invoice berhasil dibuat',
-            'data' => new InvoiceResource($invoice->load(['resident', 'user']))
-        ], 201);
+        return $this->success(new InvoiceResource($invoice->load(['resident', 'user'])), 201);
     }
 
     /**
@@ -164,16 +142,10 @@ class InvoiceController extends Controller
         $invoice = Invoice::with(['resident', 'user', 'payments'])->find($id);
 
         if (!$invoice) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invoice tidak ditemukan'
-            ], 404);
+            return $this->error('RESOURCE_NOT_FOUND');
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => new InvoiceResource($invoice)
-        ]);
+        return $this->success(new InvoiceResource($invoice));
     }
 
     /**
@@ -184,10 +156,7 @@ class InvoiceController extends Controller
         $invoice = Invoice::find($id);
 
         if (!$invoice) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invoice tidak ditemukan'
-            ], 404);
+            return $this->error('RESOURCE_NOT_FOUND');
         }
 
         $validator = Validator::make($request->all(), [
@@ -209,11 +178,7 @@ class InvoiceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan validasi',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->error('VALIDATION_ERROR', $validator->errors());
         }
 
         $data = $validator->validated();
@@ -222,10 +187,7 @@ class InvoiceController extends Controller
         if (isset($data['resident_id'])) {
             $resident = Resident::with('residentStatus')->find($data['resident_id']);
             if (!$resident) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Penduduk tidak ditemukan'
-                ], 404);
+                return $this->error('RESOURCE_NOT_FOUND');
             }
             $data['iuran_amount'] = $resident->residentStatus->contribution_amount;
         }
@@ -236,13 +198,9 @@ class InvoiceController extends Controller
             $invoiceDate = Carbon::parse($data['invoice_date'] ?? $invoice->invoice_date);
             
             if ($this->hasDuplicateMonthlyInvoice($residentId, $invoiceDate, $invoice->id)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Penduduk sudah memiliki invoice untuk bulan ini',
-                    'errors' => [
-                        'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
-                    ]
-                ], 422);
+                return $this->error('INVOICE_DUPLICATE', [
+                    'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
+                ]);
             }
         }
         
@@ -256,11 +214,7 @@ class InvoiceController extends Controller
 
         $invoice->update($data);
 
-        return response()->json([
-            'success' => true,
-                'message' => 'Invoice berhasil diperbarui',
-            'data' => new InvoiceResource($invoice->load(['resident', 'user']))
-        ]);
+        return $this->success(new InvoiceResource($invoice->load(['resident', 'user'])));
     }
 
     /**
@@ -271,17 +225,11 @@ class InvoiceController extends Controller
         $invoice = Invoice::find($id);
 
         if (!$invoice) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invoice tidak ditemukan'
-            ], 404);
+            return $this->error('RESOURCE_NOT_FOUND');
         }
 
         $invoice->delete();
 
-        return response()->json([
-            'success' => true,
-                'message' => 'Invoice berhasil dihapus'
-        ]);
+        return $this->success(null);
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained('invoices');
+            $table->foreignId('invoice_id')->constrained('invoices')->onDelete('restrict');
             $table->decimal('amount', 10, 2);
             $table->date('date');
             $table->string('method', 20);
@@ -22,6 +22,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
             $table->enum('status', ['paid', 'pending', 'invalid']);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
