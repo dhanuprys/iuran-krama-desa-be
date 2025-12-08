@@ -1,0 +1,247 @@
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   PASS  Tests\Feature\Admin\AnnouncementTest
+  ✓ admin can create announcement                                        0.18s  
+  ✓ admin can update announcement                                        0.02s  
+  ✓ admin can delete announcement                                        0.01s  
+
+   PASS  Tests\Feature\Admin\AuditLogTest
+  ✓ admin can view audit logs                                            0.01s  
+
+   FAIL  Tests\Feature\Admin\InvoiceTest
+  ⨯ admin can create invoice                                             0.03s  
+  ⨯ admin cannot create duplicate invoice in same month                  0.02s  
+  ✓ admin create invoice validation error                                0.01s  
+
+   PASS  Tests\Feature\Admin\ResidentTest
+  ✓ admin can list residents                                             0.03s  
+  ✓ admin can create resident                                            0.01s  
+  ✓ admin create resident validation error                               0.01s  
+  ✓ admin can update resident                                            0.02s  
+  ✓ admin can delete resident                                            0.02s  
+  ✓ non admin cannot access resident management                          0.01s  
+
+   FAIL  Tests\Feature\Auth\AuthenticationTest
+  ⨯ users can register                                                   0.02s  
+  ⨯ users can login                                                      0.01s  
+  ⨯ users cannot login with invalid credentials                          0.01s  
+  ✓ authenticated users can access profile                               0.01s  
+  ✓ unauthenticated users cannot access profile                          0.01s  
+  ⨯ users can logout                                                     0.01s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ the application returns a successful response                        0.02s  
+
+   PASS  Tests\Feature\Krama\AnnouncementTest
+  ✓ krama can view active announcements                                  0.02s  
+
+   PASS  Tests\Feature\Krama\InvoiceTest
+  ✓ krama can view own invoices                                          0.02s  
+  ✓ krama cannot view others invoices                                    0.01s  
+  ✓ krama cannot access specific invoice of others                       0.01s  
+
+   FAIL  Tests\Feature\Krama\ResidentTest
+  ⨯ krama can apply for resident                                         0.02s  
+  ✓ krama apply resident validation fail                                 0.01s  
+  ✓ krama can view own residents                                         0.02s  
+  ✓ krama cannot view others residents                                   0.01s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Admin\InvoiceTest > admin can create invoice           
+  Unable to find JSON fragment: 
+
+[{"total_amount":60000}]
+
+within
+
+[{"data":{"created_at":"2025-12-07 03:48:25","dedosan_amount":"0.00","id":1,"invoice_date":"2025-12-01","iuran_amount":"57251.54","peturunan_amount":"10000.00","resident":{"arrival_date":"1979-01-26","banjar":{"address":"13591 Misael Plains\nOsinskiland, IA 14947","id":1,"name":"Banjar town"},"created_at":"2025-12-07 03:48:25","date_of_birth":"1978-04-12","education":"SMA","email":"ken.kuvalis@example.org","family_status":"HEAD_OF_FAMILY","gender":"P","house_number":"75645","id":1,"location":null,"marital_status":"SINGLE","name":"Arielle Ward","nik":"0270843680226400","no_kk":"1133741696427166","origin_address":"643 Lowe Loop\nNew Russelbury, ME 88591-3886","phone":"086877434560","photo_house":null,"photo_ktp":null,"place_of_birth":"West Zachariahview","religion":"Hindu","resident_photo":null,"resident_status":{"contribution_amount":"57251.54","id":1,"name":"voluptatem"},"residential_address":"79234 Greenfelder Mills\nNorth Abagail, OR 31797","updated_at":"2025-12-07 03:48:25","user_id":2,"validation_status":"APPROVED","village_status":"PENGAMPEL","work_type":"Financial Services Sales Agent"},"total_amount":"67251.54","updated_at":"2025-12-07 03:48:25","user":{"id":1,"name":"Brayan Lowe"}},"error":null,"meta":{"timestamp":1765079305,"trace_id":"d00aef9c-c72d-42f3-8691-e02619e19ddf"},"success":true}].
+Failed asserting that false is true.
+
+  at tests/Feature/Admin/InvoiceTest.php:38
+     34▕ 
+     35▕         $response = $this->actingAs($this->admin)->postJson('/api/admin/invoices', $data);
+     36▕ 
+     37▕         $response->assertStatus(201)
+  ➜  38▕             ->assertJsonFragment(['total_amount' => 60000]);
+     39▕     }
+     40▕ 
+     41▕     public function test_admin_cannot_create_duplicate_invoice_in_same_month()
+     42▕     {
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Admin\InvoiceTest > admin cannot create duplicate i…   
+  Expected response status code [409] but received 422.
+Failed asserting that 422 is identical to 409.
+
+  at tests/Feature/Admin/InvoiceTest.php:60
+     56▕         ];
+     57▕ 
+     58▕         $response = $this->actingAs($this->admin)->postJson('/api/admin/invoices', $data);
+     59▕ 
+  ➜  60▕         $response->assertStatus(409) // APP_ERROR: INVOICE_DUPLICATE
+     61▕             ->assertJsonFragment(['code' => 'ERR-INV-001']);
+     62▕     }
+     63▕ 
+     64▕     public function test_admin_create_invoice_validation_error()
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can register           
+  Failed asserting that an array has the key 'access_token'.
+
+  at tests/Feature/Auth/AuthenticationTest.php:25
+     21▕             'role' => 'krama',
+     22▕         ]);
+     23▕ 
+     24▕         $response->assertStatus(200)
+  ➜  25▕             ->assertJsonStructure([
+     26▕                 'access_token',
+     27▕                 'token_type',
+     28▕             ]);
+     29▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can login              
+  Failed asserting that an array has the key 'access_token'.
+
+  at tests/Feature/Auth/AuthenticationTest.php:45
+     41▕             'password' => 'password',
+     42▕         ]);
+     43▕ 
+     44▕         $response->assertStatus(200)
+  ➜  45▕             ->assertJsonStructure([
+     46▕                 'access_token',
+     47▕                 'token_type',
+     48▕             ]);
+     49▕     }
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users cannot login with i…   
+  Expected response status code [401] but received 422.
+Failed asserting that 422 is identical to 401.
+
+The following errors occurred during the last request:
+
+{
+    "message": "The provided credentials are incorrect.",
+    "errors": {
+        "email": [
+            "The provided credentials are incorrect."
+        ]
+    }
+}
+
+  at tests/Feature/Auth/AuthenticationTest.php:62
+     58▕             'email' => $user->email,
+     59▕             'password' => 'wrong-password',
+     60▕         ]);
+     61▕ 
+  ➜  62▕         $response->assertStatus(401)
+     63▕             ->assertJson(['message' => 'Invalid login details']);
+     64▕     }
+     65▕ 
+     66▕     public function test_authenticated_users_can_access_profile()
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can logout             
+  Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+Error: Call to undefined method Laravel\Sanctum\TransientToken::delete() in /var/www/html/app/Http/Controllers/Api/AuthController.php:65
+Stack trace:
+#0 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(46): App\Http\Controllers\Api\AuthController->logout()
+#1 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Route.php(265): Illuminate\Routing\ControllerDispatcher->dispatch()
+#2 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Route.php(211): Illuminate\Routing\Route->runController()
+#3 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Router.php(822): Illuminate\Routing\Route->run()
+#4 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():821}()
+#5 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#6 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\SubstituteBindings->handle()
+#7 /var/www/html/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(63): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#8 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Auth\Middleware\Authenticate->handle()
+#9 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#10 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate\Pipeline\Pipeline->then()
+#11 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate\Routing\Router->runRouteWithinStack()
+#12 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate\Routing\Router->runRoute()
+#13 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate\Routing\Router->dispatchToRoute()
+#14 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch()
+#15 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}()
+#16 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}()
+#17 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#18 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle()
+#19 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#20 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle()
+#21 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle()
+#22 /var/www/html/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#23 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle()
+#24 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#25 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle()
+#26 /var/www/html/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#27 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle()
+#28 /var/www/html/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#29 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle()
+#30 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#31 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle()
+#32 /var/www/html/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#33 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle()
+#34 /var/www/html/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}()
+#35 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then()
+#36 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter()
+#37 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(607): Illuminate\Foundation\Http\Kernel->handle()
+#38 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(573): Illuminate\Foundation\Testing\TestCase->call()
+#39 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(411): Illuminate\Foundation\Testing\TestCase->json()
+#40 /var/www/html/tests/Feature/Auth/AuthenticationTest.php(90): Illuminate\Foundation\Testing\TestCase->postJson()
+#41 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestCase.php(1657): Tests\Feature\Auth\AuthenticationTest->test_users_can_logout()
+#42 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestCase.php(515): PHPUnit\Framework\TestCase->runTest()
+#43 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(87): PHPUnit\Framework\TestCase->runBare()
+#44 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run()
+#45 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestCase->run()
+#46 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#47 /var/www/html/vendor/phpunit/phpunit/src/Framework/TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#48 /var/www/html/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#49 /var/www/html/vendor/phpunit/phpunit/src/TextUI/Application.php(211): PHPUnit\TextUI\TestRunner->run()
+#50 /var/www/html/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#51 {main}
+
+----------------------------------------------------------------------------------
+
+Call to undefined method Laravel\Sanctum\TransientToken::delete()
+
+  at tests/Feature/Auth/AuthenticationTest.php:92
+     88▕         $user = User::factory()->create();
+     89▕ 
+     90▕         $response = $this->actingAs($user)->postJson('/api/logout');
+     91▕ 
+  ➜  92▕         $response->assertStatus(200)
+     93▕             ->assertJson(['message' => 'Tokens Revoked']);
+     94▕     }
+     95▕ }
+     96▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Krama\ResidentTest > krama can apply for resident      
+  Unable to find JSON fragment: 
+
+[{"created_by_user_id":1}]
+
+within
+
+[{"data":{"arrival_date":null,"banjar":{"address":"706 Kuvalis Common Apt. 748\nSouth Evans, IL 82587-9614","id":1,"name":"Banjar bury"},"created_at":"2025-12-07 03:48:26","date_of_birth":"2000-01-01","education":null,"email":null,"family_status":"HEAD_OF_FAMILY","gender":"L","house_number":null,"id":1,"location":null,"marital_status":null,"name":"Krama Applicant","nik":"1234567890123456","no_kk":"1234567890123456","origin_address":null,"phone":null,"photo_house":null,"photo_ktp":null,"place_of_birth":"Denpasar","religion":null,"resident_photo":null,"resident_status":null,"residential_address":null,"updated_at":"2025-12-07 03:48:26","user_id":1,"validation_status":"PENDING","village_status":null,"work_type":null},"error":null,"meta":{"timestamp":1765079306,"trace_id":"57607369-d4c9-439f-9e6a-adf8581289ea"},"success":true}].
+Failed asserting that false is true.
+
+  at tests/Feature/Krama/ResidentTest.php:41
+     37▕ 
+     38▕         $response = $this->actingAs($this->krama)->postJson('/api/krama/residents', $data);
+     39▕ 
+     40▕         $response->assertStatus(201)
+  ➜  41▕             ->assertJsonFragment(['validation_status' => 'PENDING', 'created_by_user_id' => $this->krama->id]);
+     42▕     }
+     43▕ 
+     44▕     public function test_krama_apply_resident_validation_fail()
+     45▕     {
+
+
+  Tests:    7 failed, 22 passed (69 assertions)
+  Duration: 0.65s
+
