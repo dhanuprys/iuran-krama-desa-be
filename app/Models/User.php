@@ -20,9 +20,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
-        'role'
+        'role',
+        'can_create_resident',
     ];
 
     /**
@@ -45,6 +47,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'can_create_resident' => 'boolean',
         ];
+    }
+    /**
+     * Get the residents for the user.
+     */
+    public function residents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Resident::class);
     }
 }
