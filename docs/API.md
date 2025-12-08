@@ -97,7 +97,7 @@ Public endpoints for registration and login.
 
 ### Register
 **POST** `/api/v1/register`
-- **Body**: `name`, `email`, `password`, `password_confirmation`, `role` (default: 'krama')
+- **Body**: `name`, `username`, `email`, `password`, `password_confirmation`, `role` (default: 'krama')
 
 ### Login
 **POST** `/api/v1/login`
