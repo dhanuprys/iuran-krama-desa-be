@@ -25,7 +25,6 @@ class DashboardController extends Controller
             'total_families' => Family::count(), // Using the View Count
             'pending_residents' => Resident::where('validation_status', 'PENDING')->count(),
             'total_users' => User::count(),
-            'total_krama' => User::where('role', 'krama')->count(),
             'total_invoices' => Invoice::count(),
             'invoice_summary' => [
                 'total_amount' => Invoice::sum('total_amount'),
