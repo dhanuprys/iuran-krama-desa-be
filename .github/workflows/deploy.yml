@@ -1,0 +1,84 @@
+name: CI/CD Deploy
+
+# NEEDED SECRETS
+# HPANEL_FTP_SERVER
+# HPANEL_FTP_USERNAME
+# HPANEL_FTP_PASSWORD
+# HPANEL_SSH_HOST
+# HPANEL_SSH_USER
+# HPANEL_SSH_KEY
+# HPANEL_SSH_PORT
+# HPANEL_REMOTE_PATH
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # Cache Composer dependencies
+      - name: Cache Composer
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath
+
+      - name: Install Composer dependencies
+        run: |
+          composer install \
+            --classmap-authoritative \
+            --no-interaction \
+            --no-ansi \
+            --no-dev \
+            && composer clear-cache
+
+      - name: Laravel Optimize & Link Storage
+        run: |
+          php artisan optimize
+          php artisan config:clear
+          php artisan storage:link
+
+      - name: Archive vendor
+        run: tar czf vendor.tar.gz vendor
+
+      - name: FTP Deploy to hPanel
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.HPANEL_FTP_SERVER }}
+          username: ${{ secrets.HPANEL_FTP_USERNAME }}
+          password: ${{ secrets.HPANEL_FTP_PASSWORD }}
+          local-dir: ./ # deploy everything from this working directory
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/vendor/**
+
+      - name: 'SSH: Decompress & Finalize'
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HPANEL_SSH_HOST }}
+          username: ${{ secrets.HPANEL_SSH_USER }}
+          key: ${{ secrets.HPANEL_SSH_KEY }}
+          port: ${{ secrets.HPANEL_SSH_PORT }}
+          script: |
+            cd ${{ secrets.HPANEL_REMOTE_PATH }}
+            if [ -f vendor.tar.gz ]; then
+              tar xzf vendor.tar.gz
+            fi
+            php artisan optimize
+            php artisan config:clear
+            php artisan storage:link
