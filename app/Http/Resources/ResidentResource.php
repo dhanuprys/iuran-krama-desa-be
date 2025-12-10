@@ -23,7 +23,7 @@ class ResidentResource extends JsonResource
             'name' => $this->name,
             'gender' => $this->gender,
             'place_of_birth' => $this->place_of_birth,
-            'date_of_birth' => $this->date_of_birth->format('Y-m-d'),
+            'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
             'family_status' => $this->family_status,
             'religion' => $this->religion,
             'education' => $this->education,
@@ -37,10 +37,10 @@ class ResidentResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'validation_status' => $this->validation_status,
-            'village_status' => $this->village_status,
-            'photo_house' => $this->photo_house,
-            'resident_photo' => $this->resident_photo,
-            'photo_ktp' => $this->photo_ktp,
+            'rejection_reason' => $this->rejection_reason,
+            'photo_house' => $this->photo_house ? asset('storage/' . $this->photo_house) : null,
+            'resident_photo' => $this->resident_photo ? asset('storage/' . $this->resident_photo) : null,
+            'photo_ktp' => $this->photo_ktp ? asset('storage/' . $this->photo_ktp) : null,
             'resident_status' => $this->whenLoaded('residentStatus', [
                 'id' => $this->residentStatus?->id,
                 'name' => $this->residentStatus?->name,
@@ -51,8 +51,8 @@ class ResidentResource extends JsonResource
                 'name' => $this->banjar?->name,
                 'address' => $this->banjar?->address,
             ]),
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

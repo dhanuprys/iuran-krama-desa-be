@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\InvoiceResource;
 
 class PaymentResource extends JsonResource
 {
@@ -16,16 +18,17 @@ class PaymentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'amount' => number_format($this->amount, 2),
-            'date' => $this->date->format('Y-m-d'),
+            'invoice_id' => $this->invoice_id,
+            'amount' => $this->amount, // Raw value or casted by model
+            'date' => $this->date?->format('Y-m-d'),
             'method' => $this->method,
             'status' => $this->status,
-            'user' => $this->when($this->user, [
-                'id' => $this->user?->id,
-                'name' => $this->user?->name,
-            ]),
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'user_id' => $this->user_id,
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
+            // Relationships
+            'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
+            'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }

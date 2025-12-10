@@ -17,7 +17,7 @@ class InvoiceResource extends JsonResource
         return [
             'id' => $this->id,
             'resident' => new ResidentResource($this->whenLoaded('resident')),
-            'invoice_date' => $this->invoice_date->format('Y-m-d'),
+            'invoice_date' => $this->invoice_date?->format('Y-m-d'),
             'iuran_amount' => $this->iuran_amount,
             'peturunan_amount' => $this->peturunan_amount,
             'dedosan_amount' => $this->dedosan_amount,
@@ -27,8 +27,8 @@ class InvoiceResource extends JsonResource
                 'name' => $this->user?->name,
             ]),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
