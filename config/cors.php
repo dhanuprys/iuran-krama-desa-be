@@ -19,7 +19,8 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // support multi deployment CORS
+    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost')),
 
     'allowed_origins_patterns' => [],
 

@@ -17,6 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(\App\Helpers\ResponseHelper::error(
+                    'ERR-NOT-FOUND',
+                    'Resource not found.'
+                ), 404);
+            }
+        });
+
         $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
                 // SQL State 23000 is for integrity constraint violation
