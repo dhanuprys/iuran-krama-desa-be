@@ -55,10 +55,18 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->admin)->getJson("/api/v1/admin/users/{$user->id}");
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/admin/users/{$user->id}");
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['id' => $user->id]);
+            ->assertJson([
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'residents' => []
+                ]
+            ]);
     }
 
     public function test_admin_can_update_user_details()

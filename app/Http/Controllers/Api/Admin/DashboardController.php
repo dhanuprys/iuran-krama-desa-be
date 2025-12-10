@@ -28,8 +28,12 @@ class DashboardController extends Controller
             'total_invoices' => Invoice::count(),
             'invoice_summary' => [
                 'total_amount' => Invoice::sum('total_amount'),
-                'total_paid' => Invoice::where('status', 'PAID')->sum('total_amount'),
-                'total_unpaid' => Invoice::where('status', 'UNPAID')->sum('total_amount'),
+                'total_paid' => Invoice::whereHas('payments', function ($query) {
+                    $query->where('status', 'paid');
+                })->sum('total_amount'),
+                'total_unpaid' => Invoice::whereDoesntHave('payments', function ($query) {
+                    $query->where('status', 'paid');
+                })->sum('total_amount'),
             ]
         ];
 

@@ -39,6 +39,11 @@ return [
         'message' => 'Access denied',
         'http_code' => 403
     ],
+    'FORBIDDEN_ACCESS' => [
+        'code' => 'ERR-AUTH-003',
+        'message' => 'Access denied to this resource',
+        'http_code' => 403
+    ],
 
     // Business Logic Errors
     'RESIDENT_DUPLICATE' => [
@@ -54,6 +59,16 @@ return [
     'RESIDENT_HAS_INVOICES' => [
         'code' => 'ERR-BIZ-003',
         'message' => 'Cannot delete resident with existing invoices',
+        'http_code' => 422
+    ],
+    'BANJAR_HAS_RESIDENTS' => [
+        'code' => 'ERR-BIZ-004',
+        'message' => 'Cannot delete banjar with associated residents',
+        'http_code' => 422
+    ],
+    'INVALID_STATUS' => [
+        'code' => 'ERR-BIZ-005',
+        'message' => 'Invalid status transition',
         'http_code' => 422
     ],
 ];

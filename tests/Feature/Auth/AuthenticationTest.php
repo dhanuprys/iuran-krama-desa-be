@@ -130,4 +130,22 @@ class AuthenticationTest extends TestCase
                 'data' => ['message' => 'Logged out successfully']
             ]);
     }
+
+    public function test_users_can_check_if_they_have_resident()
+    {
+        $user = User::factory()->create();
+
+        // Check without resident
+        $response = $this->actingAs($user)->getJson('/api/v1/user/has-resident');
+        $response->assertStatus(200)
+            ->assertJsonPath('data.has_resident', false);
+
+        // Create resident
+        \App\Models\Resident::factory()->create(['user_id' => $user->id]);
+
+        // Check with resident
+        $response = $this->actingAs($user)->getJson('/api/v1/user/has-resident');
+        $response->assertStatus(200)
+            ->assertJsonPath('data.has_resident', true);
+    }
 }

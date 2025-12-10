@@ -143,6 +143,74 @@ class ResidentTest extends TestCase
         ]);
 
         $response->assertStatus(422) // VALIDATION_ERROR
-            ->assertJsonFragment(['message' => 'Only pending applications can be updated']);
+            ->assertJsonFragment(['message' => 'Only pending or rejected applications can be updated']);
+    }
+
+    public function test_can_update_rejected_resident()
+    {
+        $banjar = Banjar::factory()->create();
+        $resident = Resident::factory()->create([
+            'user_id' => $this->krama->id,
+            'validation_status' => 'REJECTED',
+            'rejection_reason' => 'Invalid data',
+        ]);
+
+        $data = [
+            'nik' => $resident->nik,
+            'family_card_number' => '8888888888888888',
+            'name' => 'Fixed Name',
+            'gender' => 'L',
+            'place_of_birth' => 'Denpasar',
+            'date_of_birth' => '2000-01-01',
+            'family_status' => 'HEAD_OF_FAMILY',
+            'banjar_id' => $banjar->id,
+        ];
+
+        $response = $this->actingAs($this->krama)->putJson("/api/v1/krama/residents/{$resident->id}", $data);
+
+        $response->assertStatus(200)
+            ->assertJsonFragment([
+                'name' => 'Fixed Name',
+                'validation_status' => 'PENDING',
+                'rejection_reason' => null
+            ]);
+
+        $this->assertDatabaseHas('residents', [
+            'id' => $resident->id,
+            'name' => 'Fixed Name',
+            'validation_status' => 'PENDING',
+            'rejection_reason' => null
+        ]);
+    }
+
+    public function test_can_get_resident_context_list()
+    {
+        // Create approved resident
+        Resident::factory()->create([
+            'user_id' => $this->krama->id,
+            'validation_status' => 'APPROVED',
+            'name' => 'Approved Resident'
+        ]);
+
+        // Create pending resident (should not be in list)
+        Resident::factory()->create([
+            'user_id' => $this->krama->id,
+            'validation_status' => 'PENDING',
+            'name' => 'Pending Resident'
+        ]);
+
+        // Create other user's resident (should not be in list)
+        Resident::factory()->create([
+            'validation_status' => 'APPROVED',
+            'name' => 'Other Resident'
+        ]);
+
+        $response = $this->actingAs($this->krama)->getJson('/api/v1/krama/residents/context');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Approved Resident'])
+            ->assertJsonMissing(['name' => 'Pending Resident'])
+            ->assertJsonMissing(['name' => 'Other Resident']);
     }
 }

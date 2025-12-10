@@ -17,14 +17,16 @@ class FamilyController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Family::with('headOfFamily');
+        $query = Family::with('headOfFamily')->withCount('members');
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $searchTerm = $request->search;
-            $query->where('family_card_number', 'like', '%' . $searchTerm . '%')
-                ->orWhereHas('headOfFamily', function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', '%' . $searchTerm . '%');
-                });
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('family_card_number', 'like', '%' . $searchTerm . '%')
+                    ->orWhereHas('headOfFamily', function ($q2) use ($searchTerm) {
+                        $q2->where('name', 'like', '%' . $searchTerm . '%');
+                    });
+            });
         }
 
         $families = $query->paginate(15);
@@ -37,7 +39,7 @@ class FamilyController extends Controller
      */
     public function show(string $family_card_number): JsonResponse
     {
-        $family = Family::with('members.residentStatus', 'members.banjar')->find($family_card_number);
+        $family = Family::with('headOfFamily', 'members.residentStatus', 'members.banjar')->withCount('members')->find($family_card_number);
 
         if (!$family) {
             return $this->error('NOT_FOUND', null, 'Family not found', 404);

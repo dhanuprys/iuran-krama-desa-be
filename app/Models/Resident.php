@@ -34,11 +34,11 @@ class Resident extends Model
         'phone',
         'email',
         'validation_status',
-        'village_status',
         'photo_house',
         'resident_photo',
         'photo_ktp',
         'resident_status_id',
+        'rejection_reason',
     ];
 
     protected $casts = [

@@ -40,6 +40,24 @@ class ResidentTest extends TestCase
             ]);
     }
 
+    public function test_admin_can_search_residents()
+    {
+        Resident::factory()->create(['name' => 'Wayan Find Me', 'nik' => '9999999999999999']);
+        Resident::factory()->create(['name' => 'Made Ignore Me', 'nik' => '1111111111111111']);
+
+        // Search by Name
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/admin/residents?search=Find');
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Wayan Find Me']);
+
+        // Search by NIK
+        $responseNik = $this->actingAs($this->admin)->getJson('/api/v1/admin/residents?search=999999');
+        $responseNik->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['nik' => '9999999999999999']);
+    }
+
     public function test_admin_can_create_resident()
     {
         $user = User::factory()->create();

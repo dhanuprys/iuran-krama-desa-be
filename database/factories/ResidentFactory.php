@@ -38,7 +38,6 @@ class ResidentFactory extends Factory
             'phone' => $this->faker->numerify('08##########'),
             'email' => $this->faker->safeEmail,
             'validation_status' => 'APPROVED',
-            'village_status' => $this->faker->randomElement(['NEGAK', 'PEMIRAK', 'PENGAMPEL']),
             'user_id' => User::factory(),
             'created_by_user_id' => User::factory(),
             'banjar_id' => Banjar::factory(),

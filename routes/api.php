@@ -19,12 +19,17 @@ Route::prefix('v1')->group(function () {
         });
         Route::get('/profile', [AuthController::class, 'profile']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
+        Route::get('/user/has-resident', [\App\Http\Controllers\Api\AuthController::class, 'hasResident']);
+        Route::get('/resident-statuses', [\App\Http\Controllers\Api\ResidentStatusController::class, 'index']);
 
         // --- Krama Routes ---
         Route::prefix('krama')->group(function () {
-            Route::get('profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
-            Route::put('profile', [\App\Http\Controllers\Api\AuthController::class, 'updateProfile']);
-            Route::post('logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
+            Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
+            Route::put('/profile', [\App\Http\Controllers\Api\AuthController::class, 'updateProfile']);
+            Route::put('/change-password', [\App\Http\Controllers\Api\AuthController::class, 'changePassword']);
+            Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
+            Route::get('/residents/context', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'context']);
+            Route::get('/banjars', [\App\Http\Controllers\Api\Krama\BanjarController::class, 'index']);
             Route::get('/residents', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'index']);
             Route::post('/residents', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'store']);
             Route::get('/residents/{id}', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'show']);
@@ -33,6 +38,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/invoices', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'index']);
             Route::get('/invoices/{id}', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'show']);
 
+            Route::get('/dashboard', [\App\Http\Controllers\Api\Krama\DashboardController::class, 'index']);
             Route::get('/announcements', [\App\Http\Controllers\Api\Krama\AnnouncementController::class, 'index']);
         });
 
@@ -40,12 +46,15 @@ Route::prefix('v1')->group(function () {
         Route::prefix('admin')->middleware('admin')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
             Route::apiResource('residents', \App\Http\Controllers\Api\Admin\ResidentController::class);
+            Route::post('residents/{id}/validate', [\App\Http\Controllers\Api\Admin\ResidentController::class, 'validateResident']);
             Route::apiResource('invoices', \App\Http\Controllers\Api\Admin\InvoiceController::class);
             Route::apiResource('announcements', \App\Http\Controllers\Api\Admin\AnnouncementController::class);
-            Route::get('audit-logs', [\App\Http\Controllers\Api\Admin\AuditLogController::class, 'index']);
+            Route::apiResource('audit-logs', \App\Http\Controllers\Api\Admin\AuditLogController::class)->only(['index', 'show']);
             Route::apiResource('users', \App\Http\Controllers\Api\Admin\UserController::class);
             Route::get('families', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'index']);
             Route::get('families/{family_card_number}', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'show']);
+            Route::apiResource('banjars', \App\Http\Controllers\Api\Admin\BanjarController::class);
+            Route::apiResource('payments', \App\Http\Controllers\Api\Admin\PaymentController::class);
         });
     });
 });

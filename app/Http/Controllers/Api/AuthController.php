@@ -31,6 +31,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'role' => $request->role ?? 'krama', // Allow role setting if needed or default
+            'can_create_resident' => true
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -107,6 +108,36 @@ class AuthController extends Controller
         return $this->success([
             'message' => 'Profile updated successfully',
             'user' => $user
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('VALIDATION_ERROR', $validator->errors(), 'Validation failed', 400);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->error('VALIDATION_ERROR', ['current_password' => ['The provided password does not match your current password.']], 'Invalid current password', 400);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return $this->success(['message' => 'Password changed successfully']);
+    }
+
+    public function hasResident(Request $request)
+    {
+        return $this->success([
+            'has_resident' => $request->user()->residents()->exists()
         ]);
     }
 

@@ -18,7 +18,11 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = User::where('role', 'krama');
+        $query = User::query();
+
+        if ($request->has('role')) {
+            $query->where('role', $request->role);
+        }
 
         if ($request->has('search')) {
             $searchTerm = $request->search;
@@ -62,7 +66,7 @@ class UserController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $user = User::find($id);
+        $user = User::with('residents')->find($id);
 
         if (!$user) {
             return $this->error('NOT_FOUND', null, 'User not found', 404);
