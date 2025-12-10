@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+        with:
+          ref: staging
 
       # Cache Composer dependencies
       - name: Cache Composer
