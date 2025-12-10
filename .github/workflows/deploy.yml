@@ -4,6 +4,7 @@ name: CI/CD Deploy
 # HPANEL_FTP_SERVER
 # HPANEL_FTP_USERNAME
 # HPANEL_FTP_PASSWORD
+# HPANEL_FTP_PATH
 # HPANEL_SSH_HOST
 # HPANEL_SSH_USER
 # HPANEL_SSH_KEY
@@ -61,6 +62,7 @@ jobs:
           username: ${{ secrets.HPANEL_FTP_USERNAME }}
           password: ${{ secrets.HPANEL_FTP_PASSWORD }}
           local-dir: ./ # deploy everything from this working directory
+          remote-dir: ${{ secrets.HPANEL_FTP_PATH }}
           exclude: |
             **/.git*
             **/.git*/**
