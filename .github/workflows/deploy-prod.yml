@@ -1,19 +1,21 @@
 name: CI/CD Deploy
 
+# FLIGHT
 # NEEDED SECRETS
-# HPANEL_FTP_SERVER
-# HPANEL_FTP_USERNAME
-# HPANEL_FTP_PASSWORD
-# HPANEL_SSH_HOST
-# HPANEL_SSH_USER
-# HPANEL_SSH_KEY
-# HPANEL_SSH_PORT
-# HPANEL_REMOTE_PATH
+# PROD_FTP_SERVER
+# PROD_FTP_USERNAME
+# PROD_FTP_PASSWORD
+# PROD_FTP_PATH
+# PROD_SSH_HOST
+# PROD_SSH_USER
+# PROD_SSH_KEY
+# PROD_SSH_PORT
+# PROD_REMOTE_PATH
 
 on:
   push:
     branches:
-      - staging
+      - main
 
 jobs:
   deploy:
@@ -21,6 +23,8 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       # Cache Composer dependencies
       - name: Cache Composer
@@ -33,7 +37,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.4'
           extensions: mbstring, bcmath
 
       - name: Install Composer dependencies
@@ -57,10 +61,11 @@ jobs:
       - name: FTP Deploy to hPanel
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          server: ${{ secrets.HPANEL_FTP_SERVER }}
-          username: ${{ secrets.HPANEL_FTP_USERNAME }}
-          password: ${{ secrets.HPANEL_FTP_PASSWORD }}
+          server: ${{ secrets.PROD_FTP_SERVER }}
+          username: ${{ secrets.PROD_FTP_USERNAME }}
+          password: ${{ secrets.PROD_FTP_PASSWORD }}
           local-dir: ./ # deploy everything from this working directory
+          server-dir: ${{ secrets.PROD_FTP_PATH }}
           exclude: |
             **/.git*
             **/.git*/**
@@ -70,15 +75,19 @@ jobs:
       - name: 'SSH: Decompress & Finalize'
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.HPANEL_SSH_HOST }}
-          username: ${{ secrets.HPANEL_SSH_USER }}
-          key: ${{ secrets.HPANEL_SSH_KEY }}
-          port: ${{ secrets.HPANEL_SSH_PORT }}
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_SSH_PORT }}
           script: |
-            cd ${{ secrets.HPANEL_REMOTE_PATH }}
+            echo "Deploying to Flight"
+
+            cd ${{ secrets.PROD_REMOTE_PATH }}
             if [ -f vendor.tar.gz ]; then
               tar xzf vendor.tar.gz
             fi
             php artisan optimize
             php artisan config:clear
             php artisan storage:link
+
+            php artisan migrate
