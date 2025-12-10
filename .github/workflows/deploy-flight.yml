@@ -1,0 +1,91 @@
+name: CI/CD Deploy
+
+# FLIGHT
+# NEEDED SECRETS
+# FLIGHT_FTP_SERVER
+# FLIGHT_FTP_USERNAME
+# FLIGHT_FTP_PASSWORD
+# FLIGHT_FTP_PATH
+# FLIGHT_SSH_HOST
+# FLIGHT_SSH_USER
+# FLIGHT_SSH_KEY
+# FLIGHT_SSH_PORT
+# FLIGHT_REMOTE_PATH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # Cache Composer dependencies
+      - name: Cache Composer
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, bcmath
+
+      - name: Install Composer dependencies
+        run: |
+          composer install \
+            --classmap-authoritative \
+            --no-interaction \
+            --no-ansi \
+            --no-dev \
+            && composer clear-cache
+
+      - name: Laravel Optimize & Link Storage
+        run: |
+          php artisan optimize
+          php artisan config:clear
+          php artisan storage:link
+
+      - name: Archive vendor
+        run: tar czf vendor.tar.gz vendor
+
+      - name: FTP Deploy to hPanel
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FLIGHT_FTP_SERVER }}
+          username: ${{ secrets.FLIGHT_FTP_USERNAME }}
+          password: ${{ secrets.FLIGHT_FTP_PASSWORD }}
+          local-dir: ./ # deploy everything from this working directory
+          server-dir: ${{ secrets.FLIGHT_FTP_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/vendor/**
+
+      - name: 'SSH: Decompress & Finalize'
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.FLIGHT_SSH_HOST }}
+          username: ${{ secrets.FLIGHT_SSH_USER }}
+          key: ${{ secrets.FLIGHT_SSH_KEY }}
+          port: ${{ secrets.FLIGHT_SSH_PORT }}
+          script: |
+            echo "Deploying to Flight"
+
+            cd ${{ secrets.FLIGHT_REMOTE_PATH }}
+            if [ -f vendor.tar.gz ]; then
+              tar xzf vendor.tar.gz
+            fi
+            php artisan optimize
+            php artisan config:clear
+            php artisan storage:link
+
+            php artisan migrate
