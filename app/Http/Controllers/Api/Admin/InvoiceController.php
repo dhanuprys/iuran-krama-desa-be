@@ -23,11 +23,11 @@ class InvoiceController extends Controller
         $query = Invoice::where('resident_id', $residentId)
             ->whereYear('invoice_date', $invoiceDate->year)
             ->whereMonth('invoice_date', $invoiceDate->month);
-            
+
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
-        
+
         return $query->exists();
     }
     /**
@@ -35,19 +35,38 @@ class InvoiceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Invoice::with(['resident.residentStatus', 'resident.banjar', 'user', 'payments']);
+        $query = Invoice::query();
+
+        $query->select([
+            'invoices.id',
+            'invoices.invoice_date',
+            'invoices.total_amount',
+            'invoices.resident_id',
+            'invoices.iuran_amount',
+            'invoices.peturunan_amount',
+            'invoices.dedosan_amount',
+            'invoices.created_at',
+            'invoices.updated_at'
+        ]);
+
+        $query->with([
+            'resident:id,name,nik',
+            // 'resident.residentStatus', // Not strictly used in table, usually just name/nik
+            // 'resident.banjar',        // Not used in table
+            'payments:id,invoice_id,amount,status'
+        ]);
 
         // Filter by resident if provided
         if ($request->filled('resident_id')) {
-            $query->where('resident_id', $request->resident_id);
+            $query->where('invoices.resident_id', $request->resident_id);
         }
 
         // Filter by date range if provided
         if ($request->filled('start_date')) {
-            $query->where('invoice_date', '>=', $request->start_date);
+            $query->where('invoices.invoice_date', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $query->where('invoice_date', '<=', $request->end_date);
+            $query->where('invoices.invoice_date', '<=', $request->end_date);
         }
 
         // Search by resident name, NIK, or phone
@@ -55,24 +74,24 @@ class InvoiceController extends Controller
             $searchTerm = $request->search;
             $query->whereHas('resident', function ($q) use ($searchTerm) {
                 $q->where('name', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('nik', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('phone', 'like', '%' . $searchTerm . '%');
+                    ->orWhere('nik', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('phone', 'like', '%' . $searchTerm . '%');
             });
         }
 
         // Sort options
         $sortBy = $request->get('sort_by', 'invoice_date');
         $sortOrder = $request->get('sort_order', 'desc');
-        
+
         $allowedSortFields = ['invoice_date', 'total_amount', 'created_at', 'updated_at'];
         if (in_array($sortBy, $allowedSortFields)) {
-            $query->orderBy($sortBy, $sortOrder);
+            $query->orderBy('invoices.' . $sortBy, $sortOrder);
         }
 
         $perPage = min($request->get('per_page', 15), 100); // Max 100 per page
         $invoices = $query->paginate($perPage);
 
-        return $this->paginated(new \Illuminate\Http\Resources\Json\ResourceCollection($invoices, InvoiceResource::class));
+        return $this->paginated(InvoiceResource::collection($invoices));
     }
 
     /**
@@ -107,7 +126,7 @@ class InvoiceController extends Controller
         }
 
         $data = $validator->validated();
-        
+
         // Get resident with resident status to get contribution amount
         $resident = Resident::with('residentStatus')->find($data['resident_id']);
         if (!$resident) {
@@ -116,10 +135,10 @@ class InvoiceController extends Controller
 
         // Set iuran_amount from resident's contribution amount
         $data['iuran_amount'] = $resident->residentStatus->contribution_amount;
-        
+
         // Check if resident already has an invoice for the same month and year
         $invoiceDate = Carbon::parse($data['invoice_date']);
-        
+
         if ($this->hasDuplicateMonthlyInvoice($data['resident_id'], $invoiceDate)) {
             return $this->error('INVOICE_DUPLICATE', [
                 'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
@@ -182,7 +201,7 @@ class InvoiceController extends Controller
         }
 
         $data = $validator->validated();
-        
+
         // If resident_id is being updated, get the new resident's contribution amount
         if (isset($data['resident_id'])) {
             $resident = Resident::with('residentStatus')->find($data['resident_id']);
@@ -191,22 +210,22 @@ class InvoiceController extends Controller
             }
             $data['iuran_amount'] = $resident->residentStatus->contribution_amount;
         }
-        
+
         // Check if updating resident_id or invoice_date would create a duplicate monthly invoice
         if (isset($data['resident_id']) || isset($data['invoice_date'])) {
             $residentId = $data['resident_id'] ?? $invoice->resident_id;
             $invoiceDate = Carbon::parse($data['invoice_date'] ?? $invoice->invoice_date);
-            
+
             if ($this->hasDuplicateMonthlyInvoice($residentId, $invoiceDate, $invoice->id)) {
                 return $this->error('INVOICE_DUPLICATE', [
                     'resident_id' => ['Penduduk ini sudah memiliki invoice untuk ' . $invoiceDate->format('F Y')]
                 ]);
             }
         }
-        
+
         // Recalculate total if any amount fields are updated
         if (isset($data['iuran_amount']) || isset($data['peturunan_amount']) || isset($data['dedosan_amount'])) {
-            $data['total_amount'] = 
+            $data['total_amount'] =
                 ($data['iuran_amount'] ?? $invoice->iuran_amount) +
                 ($data['peturunan_amount'] ?? $invoice->peturunan_amount) +
                 ($data['dedosan_amount'] ?? $invoice->dedosan_amount);

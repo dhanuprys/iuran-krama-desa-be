@@ -29,14 +29,27 @@ class InvoiceController extends Controller
             return $this->error('FORBIDDEN', null, 'You do not have access to this resident data', 403);
         }
 
-        $query = Invoice::with(['resident', 'resident.residentStatus', 'resident.banjar'])
-            ->where('resident_id', $resident->id);
+        $query = Invoice::query();
+
+        $query->select([
+            'invoices.id',
+            'invoices.invoice_date',
+            'invoices.total_amount',
+            'invoices.resident_id',
+            'invoices.created_at',
+            'invoices.updated_at' // usually good to keep
+        ]);
+
+        $query->with([
+            'payments:id,invoice_id,amount,status'
+        ])
+            ->where('invoices.resident_id', $resident->id);
 
         if ($request->has('sort_by') && in_array($request->sort_by, ['total_amount', 'invoice_date', 'created_at', 'updated_at'])) {
             $sortOrder = $request->input('sort_order', 'desc');
-            $query->orderBy($request->sort_by, $sortOrder);
+            $query->orderBy('invoices.' . $request->sort_by, $sortOrder);
         } else {
-            $query->orderBy('invoice_date', 'desc');
+            $query->orderBy('invoices.invoice_date', 'desc');
         }
 
         $invoices = $query->paginate($request->input('per_page', 15));

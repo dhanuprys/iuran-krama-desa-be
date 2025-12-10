@@ -20,31 +20,57 @@ class ResidentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Resident::with(['residentStatus', 'banjar', 'invoices']);
+        $query = Resident::query();
+
+        // Select specific columns to reduce payload
+        $query->select([
+            'residents.id',
+            'residents.nik',
+            'residents.name',
+            'residents.gender',
+            'residents.validation_status',
+            'residents.banjar_id',
+            'residents.resident_status_id',
+            'residents.family_status', // Used in Krama View
+            'residents.residential_address', // Used in Krama View
+            'residents.resident_photo', // Used in Krama View
+            'residents.created_at',
+            'residents.updated_at'
+        ]);
+
+        $query->with([
+            'residentStatus:id,name,contribution_amount',
+            'banjar:id,name'
+        ]);
 
         // Search by name, NIK, or phone
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('nik', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('phone', 'like', '%' . $searchTerm . '%');
+                $q->where('residents.name', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('residents.nik', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('residents.phone', 'like', '%' . $searchTerm . '%');
             });
         }
 
         // Filter by banjar
-        if ($request->has('banjar_id')) {
-            $query->where('banjar_id', $request->banjar_id);
+        if ($request->filled('banjar_id')) {
+            $query->where('residents.banjar_id', $request->banjar_id);
         }
 
         // Filter by resident status
-        if ($request->has('resident_status_id')) {
-            $query->where('resident_status_id', $request->resident_status_id);
+        if ($request->filled('resident_status_id')) {
+            $query->where('residents.resident_status_id', $request->resident_status_id);
         }
 
         // Filter by gender
-        if ($request->has('gender')) {
-            $query->where('gender', $request->gender);
+        if ($request->filled('gender')) {
+            $query->where('residents.gender', $request->gender);
+        }
+
+        // Filter by validation status
+        if ($request->filled('validation_status')) {
+            $query->where('residents.validation_status', $request->validation_status);
         }
 
         // Sort options
@@ -53,12 +79,12 @@ class ResidentController extends Controller
 
         $allowedSortFields = ['name', 'nik', 'created_at', 'updated_at'];
         if (in_array($sortBy, $allowedSortFields)) {
-            $query->orderBy($sortBy, $sortOrder);
+            $query->orderBy('residents.' . $sortBy, $sortOrder);
         }
 
         $residents = $query->paginate(15);
 
-        return $this->paginated(new \Illuminate\Http\Resources\Json\ResourceCollection($residents, ResidentResource::class));
+        return $this->paginated(ResidentResource::collection($residents));
     }
 
     /**
@@ -88,7 +114,6 @@ class ResidentController extends Controller
             'phone' => 'nullable|string|max:12',
             'email' => 'nullable|email|max:50',
             'validation_status' => 'nullable|in:PENDING,APPROVED,REJECTED',
-            'village_status' => 'nullable|in:NEGAK,PEMIRAK,PENGAMPEL',
             'photo_house' => 'nullable|image|max:5120',
             'resident_photo' => 'nullable|image|max:5120',
             'photo_ktp' => 'nullable|image|max:5120',
@@ -164,7 +189,6 @@ class ResidentController extends Controller
             'phone' => 'nullable|string|max:12',
             'email' => 'nullable|email|max:50',
             'validation_status' => 'nullable|in:PENDING,APPROVED,REJECTED',
-            'village_status' => 'nullable|in:NEGAK,PEMIRAK,PENGAMPEL',
             'photo_house' => 'nullable|image|max:5120',
             'resident_photo' => 'nullable|image|max:5120',
             'photo_ktp' => 'nullable|image|max:5120',
@@ -214,4 +238,39 @@ class ResidentController extends Controller
         return $this->success(null);
     }
 
+    /**
+     * Validate (Approve/Reject) a resident application.
+     */
+    public function validateResident(Request $request, string $id): JsonResponse
+    {
+        $resident = Resident::find($id);
+
+        if (!$resident) {
+            return $this->error('RESOURCE_NOT_FOUND');
+        }
+
+        if ($resident->validation_status !== 'PENDING') {
+            return $this->error('INVALID_STATUS', null, 'Only pending residents can be validated.', 422);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:APPROVED,REJECTED',
+            'rejection_reason' => 'required_if:status,REJECTED|string|nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('VALIDATION_ERROR', $validator->errors());
+        }
+
+        $resident->validation_status = $request->status;
+        if ($request->status === 'REJECTED') {
+            $resident->rejection_reason = $request->rejection_reason;
+        } else {
+            $resident->rejection_reason = null;
+        }
+
+        $resident->save();
+
+        return $this->success(new ResidentResource($resident));
+    }
 }

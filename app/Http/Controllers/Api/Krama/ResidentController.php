@@ -19,12 +19,41 @@ class ResidentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Resident::with(['residentStatus', 'banjar'])
-            ->where('user_id', auth()->id());
+        $query = Resident::query();
+
+        $query->select([
+            'residents.id',
+            'residents.nik',
+            'residents.name',
+            'residents.gender',
+            'residents.validation_status',
+            'residents.family_status',
+            'residents.residential_address',
+            'residents.resident_photo',
+            'residents.banjar_id',
+            'residents.user_id',
+            'residents.created_at'
+        ]);
+
+        $query->with(['residentStatus:id,name', 'banjar:id,name'])
+            ->where('residents.user_id', auth()->id());
 
         $residents = $query->latest()->paginate(15);
 
-        return $this->paginated(new \Illuminate\Http\Resources\Json\ResourceCollection($residents, ResidentResource::class));
+        return $this->paginated(ResidentResource::collection($residents));
+    }
+
+    /**
+     * Get list of residents for context switching (No Pagination).
+     */
+    public function context(Request $request): JsonResponse
+    {
+        $residents = Resident::where('user_id', auth()->id())
+            ->where('validation_status', 'APPROVED')
+            ->select(['id', 'name', 'nik', 'resident_photo'])
+            ->get();
+
+        return $this->success(\App\Http\Resources\ResidentContextResource::collection($residents));
     }
 
     /**
@@ -55,7 +84,6 @@ class ResidentController extends Controller
             'arrival_date' => 'nullable|date',
             'phone' => 'nullable|string|max:12',
             'email' => 'nullable|email|max:50',
-            'village_status' => 'nullable|in:NEGAK,PEMIRAK,PENGAMPEL',
             'photo_house' => 'nullable|image|max:5120',
             'resident_photo' => 'nullable|image|max:5120',
             'photo_ktp' => 'nullable|image|max:5120',
@@ -101,9 +129,10 @@ class ResidentController extends Controller
             return $this->error('NOT_FOUND', null, 'Resident not found or unauthorized', 404);
         }
 
-        if ($resident->validation_status !== 'APPROVED') {
-            return $this->error('FORBIDDEN', null, 'Resident application is not yet approved.', 403);
-        }
+        // Allow Krama to view their own residents regardless of status (e.g. for editing pending ones)
+        // if ($resident->validation_status !== 'APPROVED') {
+        //     return $this->error('FORBIDDEN', null, 'Resident application is not yet approved.', 403);
+        // }
 
         return $this->success(new ResidentResource($resident));
     }
@@ -117,8 +146,8 @@ class ResidentController extends Controller
             return $this->error('NOT_FOUND', null, 'Resident not found or unauthorized', 404);
         }
 
-        if ($resident->validation_status !== 'PENDING') {
-            return $this->error('VALIDATION_ERROR', null, 'Only pending applications can be updated', 422);
+        if (!in_array($resident->validation_status, ['PENDING', 'REJECTED'])) {
+            return $this->error('VALIDATION_ERROR', null, 'Only pending or rejected applications can be updated', 422);
         }
 
         $validator = Validator::make($request->all(), [
@@ -140,7 +169,6 @@ class ResidentController extends Controller
             'arrival_date' => 'nullable|date',
             'phone' => 'nullable|string|max:12',
             'email' => 'nullable|email|max:50',
-            'village_status' => 'nullable|in:NEGAK,PEMIRAK,PENGAMPEL',
             'photo_house' => 'nullable|image|max:5120',
             'resident_photo' => 'nullable|image|max:5120',
             'photo_ktp' => 'nullable|image|max:5120',
@@ -164,7 +192,11 @@ class ResidentController extends Controller
             $data['photo_ktp'] = $request->file('photo_ktp')->store('resident_photos', 'public');
         }
 
-        $resident->update($data);
+        $resident->update([
+            ...$data,
+            'validation_status' => 'PENDING',
+            'rejection_reason' => null,
+        ]);
 
         return $this->success(new ResidentResource($resident));
     }
