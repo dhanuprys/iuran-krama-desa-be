@@ -35,6 +35,9 @@ class InvoiceController extends Controller
             'invoices.id',
             'invoices.invoice_date',
             'invoices.total_amount',
+            'invoices.iuran_amount',
+            'invoices.peturunan_amount',
+            'invoices.dedosan_amount',
             'invoices.resident_id',
             'invoices.created_at',
             'invoices.updated_at' // usually good to keep
