@@ -31,7 +31,7 @@ class InvoiceTest extends TestCase
     public function test_operator_can_create_invoice()
     {
         $operator = User::factory()->create(['role' => 'operator']);
-        $resident = Resident::factory()->create();
+        $resident = Resident::factory()->create(['family_status' => 'HEAD_OF_FAMILY']);
 
         $data = [
             'resident_id' => $resident->id,

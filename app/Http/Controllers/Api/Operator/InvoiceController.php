@@ -116,35 +116,9 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(\App\Http\Requests\StoreInvoiceRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'resident_id' => 'required|integer|exists:residents,id',
-            'invoice_date' => 'required|date|before_or_equal:today',
-            'peturunan_amount' => 'required|numeric|min:0|max:999999.99',
-            'dedosan_amount' => 'required|numeric|min:0|max:999999.99',
-        ], [
-            'resident_id.required' => 'ID penduduk wajib diisi.',
-            'resident_id.integer' => 'ID penduduk harus berupa angka.',
-            'resident_id.exists' => 'Penduduk yang dipilih tidak ditemukan.',
-            'invoice_date.required' => 'Tanggal invoice wajib diisi.',
-            'invoice_date.date' => 'Format tanggal invoice tidak valid.',
-            'invoice_date.before_or_equal' => 'Tanggal invoice tidak boleh di masa depan.',
-            'peturunan_amount.required' => 'Jumlah peturunan wajib diisi.',
-            'peturunan_amount.numeric' => 'Jumlah peturunan harus berupa angka.',
-            'peturunan_amount.min' => 'Jumlah peturunan tidak boleh kurang dari 0.',
-            'peturunan_amount.max' => 'Jumlah peturunan tidak boleh melebihi 999.999,99.',
-            'dedosan_amount.required' => 'Jumlah dedosan wajib diisi.',
-            'dedosan_amount.numeric' => 'Jumlah dedosan harus berupa angka.',
-            'dedosan_amount.min' => 'Jumlah dedosan tidak boleh kurang dari 0.',
-            'dedosan_amount.max' => 'Jumlah dedosan tidak boleh melebihi 999.999,99.',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
 
         // Get resident with resident status to get contribution amount
         $resident = Resident::with('residentStatus')->find($data['resident_id']);
@@ -193,7 +167,7 @@ class InvoiceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(\App\Http\Requests\UpdateInvoiceRequest $request, string $id): JsonResponse
     {
         $invoice = Invoice::find($id);
 
@@ -201,29 +175,7 @@ class InvoiceController extends Controller
             return $this->error('RESOURCE_NOT_FOUND');
         }
 
-        $validator = Validator::make($request->all(), [
-            'resident_id' => 'sometimes|integer|exists:residents,id',
-            'invoice_date' => 'sometimes|date|before_or_equal:today',
-            'peturunan_amount' => 'sometimes|numeric|min:0|max:999999.99',
-            'dedosan_amount' => 'sometimes|numeric|min:0|max:999999.99',
-        ], [
-            'resident_id.integer' => 'ID penduduk harus berupa angka.',
-            'resident_id.exists' => 'Penduduk yang dipilih tidak ditemukan.',
-            'invoice_date.date' => 'Format tanggal invoice tidak valid.',
-            'invoice_date.before_or_equal' => 'Tanggal invoice tidak boleh di masa depan.',
-            'peturunan_amount.numeric' => 'Jumlah peturunan harus berupa angka.',
-            'peturunan_amount.min' => 'Jumlah peturunan tidak boleh kurang dari 0.',
-            'peturunan_amount.max' => 'Jumlah peturunan tidak boleh melebihi 999.999,99.',
-            'dedosan_amount.numeric' => 'Jumlah dedosan harus berupa angka.',
-            'dedosan_amount.min' => 'Jumlah dedosan tidak boleh kurang dari 0.',
-            'dedosan_amount.max' => 'Jumlah dedosan tidak boleh melebihi 999.999,99.',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
 
         // If resident_id is being updated, get the new resident's contribution amount
         if (isset($data['resident_id'])) {

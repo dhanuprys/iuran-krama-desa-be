@@ -96,43 +96,12 @@ class ResidentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(\App\Http\Requests\StoreResidentRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'nik' => 'required|string|max:16|unique:residents,nik',
-            'user_id' => 'required|exists:users,id',
-            'banjar_id' => 'nullable|exists:banjars,id',
-            'family_card_number' => 'required|string|max:16',
-            'name' => 'required|string|max:80',
-            'gender' => 'required|in:L,P',
-            'place_of_birth' => 'required|string|max:50',
-            'date_of_birth' => 'required|date',
-            'family_status' => 'required|in:HEAD_OF_FAMILY,PARENT,HUSBAND,WIFE,CHILD',
-            'religion' => 'nullable|string|max:50',
-            'education' => 'nullable|string|max:50',
-            'work_type' => 'nullable|string|max:50',
-            'marital_status' => 'nullable|in:MARRIED,SINGLE,DEAD_DIVORCE,LIVING_DIVORCE',
-            'origin_address' => 'nullable|string',
-            'residential_address' => 'nullable|string',
-            'rt_number' => 'nullable|string|max:10',
-            'residence_name' => 'nullable|string|max:100',
-            'house_number' => 'nullable|string|max:20',
-            'location' => 'nullable|array',
-            'arrival_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:12',
-            'email' => 'nullable|email|max:50',
-            'validation_status' => 'nullable|in:PENDING,APPROVED,REJECTED',
-            'photo_house' => 'nullable|image|max:5120',
-            'resident_photo' => 'nullable|image|max:5120',
-            'photo_ktp' => 'nullable|image|max:5120',
-            'resident_status_id' => 'nullable|exists:resident_statuses,id',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
 
         // Handle file uploads
         if ($request->hasFile('photo_house')) {
@@ -167,7 +136,7 @@ class ResidentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(\App\Http\Requests\UpdateResidentRequest $request, string $id): JsonResponse
     {
         $resident = Resident::find($id);
 
@@ -175,41 +144,7 @@ class ResidentController extends Controller
             return $this->error('RESOURCE_NOT_FOUND');
         }
 
-        $validator = Validator::make($request->all(), [
-            'nik' => 'sometimes|string|max:16|unique:residents,nik,' . $id,
-            'user_id' => 'sometimes|exists:users,id',
-            'banjar_id' => 'nullable|exists:banjars,id',
-            'family_card_number' => 'sometimes|string|max:16',
-            'name' => 'sometimes|string|max:80',
-            'gender' => 'sometimes|in:L,P',
-            'place_of_birth' => 'sometimes|string|max:50',
-            'date_of_birth' => 'sometimes|date',
-            'family_status' => 'sometimes|in:HEAD_OF_FAMILY,PARENT,HUSBAND,WIFE,CHILD',
-            'religion' => 'nullable|string|max:50',
-            'education' => 'nullable|string|max:50',
-            'work_type' => 'nullable|string|max:50',
-            'marital_status' => 'nullable|in:MARRIED,SINGLE,DEAD_DIVORCE,LIVING_DIVORCE',
-            'origin_address' => 'nullable|string',
-            'residential_address' => 'nullable|string',
-            'rt_number' => 'nullable|string|max:10',
-            'residence_name' => 'nullable|string|max:100',
-            'house_number' => 'nullable|string|max:20',
-            'location' => 'nullable|array',
-            'arrival_date' => 'nullable|date',
-            'phone' => 'nullable|string|max:12',
-            'email' => 'nullable|email|max:50',
-            'validation_status' => 'nullable|in:PENDING,APPROVED,REJECTED',
-            'photo_house' => 'nullable|image|max:5120',
-            'resident_photo' => 'nullable|image|max:5120',
-            'photo_ktp' => 'nullable|image|max:5120',
-            'resident_status_id' => 'nullable|exists:resident_statuses,id',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
 
         // Handle file uploads
         if ($request->hasFile('photo_house')) {

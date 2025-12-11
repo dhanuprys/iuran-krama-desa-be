@@ -76,7 +76,20 @@ class ResidentTest extends TestCase
             'family_status' => 'HEAD_OF_FAMILY',
             'photo_ktp' => $photo,
             'rt_number' => '005',
+
             'residence_name' => 'Griya Asri',
+            'house_number' => '123',
+            'religion' => 'Hindu',
+            'education' => 'S1',
+            'work_type' => 'PNS',
+            'marital_status' => 'MARRIED',
+            'phone' => '081234567890',
+            'email' => 'wayan@example.com',
+            'origin_address' => 'Denpasar',
+            'residential_address' => 'Denpasar',
+            'resident_status_id' => \App\Models\ResidentStatus::factory()->create()->id,
+            'photo_house' => $photo,
+            'resident_photo' => $photo,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/admin/residents', $data);

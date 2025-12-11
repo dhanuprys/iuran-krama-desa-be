@@ -12,25 +12,14 @@ class AuthController extends Controller
 {
     use \App\Traits\ApiResponse;
 
-    public function register(Request $request)
+    public function register(\App\Http\Requests\RegisterRequest $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'name' => 'required|string|max:150',
-            'username' => 'required|string|max:50|unique:users,username',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
         $user = User::create([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
             'password' => $request->password,
-            'role' => $request->role ?? 'krama', // Allow role setting if needed or default
+            'role' => $request->role ?? 'krama',
             'can_create_resident' => true
         ]);
 
@@ -44,17 +33,8 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(\App\Http\Requests\LoginRequest $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:8',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
         $user = User::where('email', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->error('UNAUTHORIZED', null, 'Invalid login details');
@@ -75,20 +55,9 @@ class AuthController extends Controller
         return $this->success($request->user());
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(\App\Http\Requests\UpdateProfileRequest $request)
     {
         $user = $request->user();
-
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:150',
-            'username' => 'sometimes|string|max:50|unique:users,username,' . $user->id,
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
 
         if ($request->has('name')) {
             $user->name = $request->name;
@@ -111,17 +80,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(\App\Http\Requests\ChangePasswordRequest $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'current_password' => 'required',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors(), 'Validation failed', 400);
-        }
-
         $user = $request->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
