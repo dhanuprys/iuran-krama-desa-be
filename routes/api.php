@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
             Route::get('families', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'index']);
             Route::get('families/{family_card_number}', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'show']);
             Route::apiResource('banjars', \App\Http\Controllers\Api\Admin\BanjarController::class);
+            Route::apiResource('resident-statuses', \App\Http\Controllers\Api\Admin\ResidentStatusController::class);
             Route::apiResource('payments', \App\Http\Controllers\Api\Admin\PaymentController::class);
         });
     });
