@@ -31,6 +31,8 @@ class ResidentResource extends JsonResource
             'marital_status' => $this->marital_status,
             'origin_address' => $this->origin_address,
             'residential_address' => $this->residential_address,
+            'rt_number' => $this->rt_number,
+            'residence_name' => $this->residence_name,
             'house_number' => $this->house_number,
             'location' => $this->location,
             'arrival_date' => $this->arrival_date?->format('Y-m-d'),

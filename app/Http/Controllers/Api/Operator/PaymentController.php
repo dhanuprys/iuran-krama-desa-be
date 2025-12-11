@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
-use App\Models\Invoice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -35,8 +34,8 @@ class PaymentController extends Controller
 
         $query->with([
             'invoice.resident:id,name,resident_status_id',
-            'invoice.resident.residentStatus:id,name', // Used for "Krama: ..." display
-            'user:id,name' // Used for "Oleh: ..."
+            'invoice.resident.residentStatus:id,name',
+            'user:id,name'
         ]);
 
         // Filter by invoice if provided
@@ -98,10 +97,6 @@ class PaymentController extends Controller
 
         $data = $validator->validated();
 
-        // Verify invoice exists and check if adding this payment would overpay? 
-        // For now, just allow adding payments. 
-        // Ideally should check if invoice is already fully paid, but partial payments are allowed.
-
         $data['user_id'] = auth()->id();
 
         $payment = Payment::create($data);
@@ -128,6 +123,7 @@ class PaymentController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        // ... (existing update logic)
         $payment = Payment::find($id);
 
         if (!$payment) {
@@ -148,22 +144,6 @@ class PaymentController extends Controller
         $payment->update($validator->validated());
 
         return $this->success(new PaymentResource($payment->load(['invoice', 'user'])));
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): JsonResponse
-    {
-        $payment = Payment::find($id);
-
-        if (!$payment) {
-            return $this->error('RESOURCE_NOT_FOUND');
-        }
-
-        $payment->delete();
-
-        return $this->success(null);
     }
 
     /**

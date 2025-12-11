@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ResidentResource;
-use App\Models\Banjar;
 use App\Models\Resident;
-use App\Models\ResidentStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -31,12 +29,12 @@ class ResidentController extends Controller
             'residents.validation_status',
             'residents.banjar_id',
             'residents.resident_status_id',
-            'residents.family_status', // Used in Krama View
-            'residents.residential_address', // Used in Krama View
+            'residents.family_status',
+            'residents.residential_address',
             'residents.rt_number',
             'residents.residence_name',
             'residents.house_number',
-            'residents.resident_photo', // Used in Krama View
+            'residents.resident_photo',
             'residents.created_at',
             'residents.updated_at'
         ]);
@@ -162,62 +160,5 @@ class ResidentController extends Controller
         $resident->update($data);
 
         return $this->success(new ResidentResource($resident->load(['residentStatus', 'banjar'])));
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): JsonResponse
-    {
-        $resident = Resident::find($id);
-
-        if (!$resident) {
-            return $this->error('RESOURCE_NOT_FOUND');
-        }
-
-        // Check if resident has invoices
-        if ($resident->invoices()->count() > 0) {
-            return $this->error('RESIDENT_HAS_INVOICES');
-        }
-
-        $resident->delete();
-
-        return $this->success(null);
-    }
-
-    /**
-     * Validate (Approve/Reject) a resident application.
-     */
-    public function validateResident(Request $request, string $id): JsonResponse
-    {
-        $resident = Resident::find($id);
-
-        if (!$resident) {
-            return $this->error('RESOURCE_NOT_FOUND');
-        }
-
-        if ($resident->validation_status !== 'PENDING') {
-            return $this->error('INVALID_STATUS', null, 'Only pending residents can be validated.', 422);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:APPROVED,REJECTED',
-            'rejection_reason' => 'required_if:status,REJECTED|string|nullable',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->error('VALIDATION_ERROR', $validator->errors());
-        }
-
-        $resident->validation_status = $request->status;
-        if ($request->status === 'REJECTED') {
-            $resident->rejection_reason = $request->rejection_reason;
-        } else {
-            $resident->rejection_reason = null;
-        }
-
-        $resident->save();
-
-        return $this->success(new ResidentResource($resident));
     }
 }

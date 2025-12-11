@@ -70,6 +70,6 @@ class ChangePasswordTest extends TestCase
             'password_confirmation' => 'mismatch-password',
         ]);
 
-        $response->assertStatus(400);
+        $response->assertStatus(422);
     }
 }

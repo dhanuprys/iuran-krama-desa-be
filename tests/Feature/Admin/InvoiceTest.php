@@ -22,7 +22,7 @@ class InvoiceTest extends TestCase
 
     public function test_admin_can_create_invoice()
     {
-        $resident = Resident::factory()->create();
+        $resident = Resident::factory()->create(['family_status' => 'HEAD_OF_FAMILY']);
         // Ensure resident status has known contribution amount
         $resident->residentStatus->update(['contribution_amount' => 50000]);
 
@@ -42,7 +42,7 @@ class InvoiceTest extends TestCase
 
     public function test_admin_cannot_create_duplicate_invoice_in_same_month()
     {
-        $resident = Resident::factory()->create();
+        $resident = Resident::factory()->create(['family_status' => 'HEAD_OF_FAMILY']);
 
         Invoice::factory()->create([
             'resident_id' => $resident->id,

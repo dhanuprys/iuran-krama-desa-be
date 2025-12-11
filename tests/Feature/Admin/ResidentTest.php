@@ -75,12 +75,31 @@ class ResidentTest extends TestCase
             'date_of_birth' => '1990-01-01',
             'family_status' => 'HEAD_OF_FAMILY',
             'photo_ktp' => $photo,
+            'rt_number' => '005',
+
+            'residence_name' => 'Griya Asri',
+            'house_number' => '123',
+            'religion' => 'Hindu',
+            'education' => 'S1',
+            'work_type' => 'PNS',
+            'marital_status' => 'MARRIED',
+            'phone' => '081234567890',
+            'email' => 'wayan@example.com',
+            'origin_address' => 'Denpasar',
+            'residential_address' => 'Denpasar',
+            'resident_status_id' => \App\Models\ResidentStatus::factory()->create()->id,
+            'photo_house' => $photo,
+            'resident_photo' => $photo,
         ];
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/admin/residents', $data);
 
         $response->assertStatus(201)
-            ->assertJsonFragment(['name' => 'Wayan Test']);
+            ->assertJsonFragment([
+                'name' => 'Wayan Test',
+                'rt_number' => '005',
+                'residence_name' => 'Griya Asri',
+            ]);
 
         $resident = Resident::where('nik', '1234567890123456')->first();
         $this->assertNotNull($resident->photo_ktp);
@@ -113,10 +132,16 @@ class ResidentTest extends TestCase
 
         $response = $this->actingAs($this->admin)->putJson("/api/v1/admin/residents/{$resident->id}", [
             'name' => 'Updated Name',
+            'rt_number' => '006',
+            'residence_name' => 'Puri Damai',
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['name' => 'Updated Name']);
+            ->assertJsonFragment([
+                'name' => 'Updated Name',
+                'rt_number' => '006',
+                'residence_name' => 'Puri Damai',
+            ]);
 
         $this->assertDatabaseHas('residents', ['id' => $resident->id, 'name' => 'Updated Name']);
     }

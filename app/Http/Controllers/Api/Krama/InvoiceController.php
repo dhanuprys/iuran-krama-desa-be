@@ -12,6 +12,28 @@ use Illuminate\Http\Request;
 class InvoiceController extends Controller
 {
     use ApiResponse;
+    use \App\Traits\GeneratesInvoicePdf;
+
+    // ... (existing index method)
+
+    /**
+     * Download invoice PDF.
+     */
+    public function download(string $id)
+    {
+        $invoice = Invoice::with('resident')->find($id);
+
+        if (!$invoice) {
+            return $this->error('RESOURCE_NOT_FOUND');
+        }
+
+        // Authorization: Check if the invoice belongs to a resident owned by the user
+        if ($invoice->resident->user_id !== auth()->id()) {
+            return $this->error('FORBIDDEN');
+        }
+
+        return $this->generatePdfResponse($invoice);
+    }
 
     public function index(Request $request): JsonResponse
     {
