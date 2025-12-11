@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/invoices/{id}/download', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'download']);
             Route::get('/invoices/{id}', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'show']);
 
+            Route::get('/payments/{payment}/download', [\App\Http\Controllers\Api\Krama\PaymentController::class, 'download']);
             Route::get('/dashboard', [\App\Http\Controllers\Api\Krama\DashboardController::class, 'index']);
             Route::get('/announcements', [\App\Http\Controllers\Api\Krama\AnnouncementController::class, 'index']);
         });
@@ -48,6 +49,7 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Operator\DashboardController::class, 'index']);
             Route::get('invoices/{id}/download', [\App\Http\Controllers\Api\Operator\InvoiceController::class, 'download']);
             Route::apiResource('invoices', \App\Http\Controllers\Api\Operator\InvoiceController::class);
+            Route::get('payments/{payment}/download', [\App\Http\Controllers\Api\Operator\PaymentController::class, 'download']);
             Route::apiResource('payments', \App\Http\Controllers\Api\Operator\PaymentController::class);
             Route::apiResource('residents', \App\Http\Controllers\Api\Operator\ResidentController::class)->except(['destroy']);
         });
@@ -68,6 +70,8 @@ Route::prefix('v1')->group(function () {
             Route::get('families/{family_card_number}', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'show']);
             Route::apiResource('banjars', \App\Http\Controllers\Api\Admin\BanjarController::class);
             Route::apiResource('resident-statuses', \App\Http\Controllers\Api\Admin\ResidentStatusController::class);
+            Route::apiResource('resident-statuses', \App\Http\Controllers\Api\Admin\ResidentStatusController::class);
+            Route::get('payments/{payment}/download', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'download']);
             Route::apiResource('payments', \App\Http\Controllers\Api\Admin\PaymentController::class);
         });
     });

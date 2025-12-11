@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use \App\Traits\ApiResponse, \App\Traits\GeneratesReceiptPdf;
 
     /**
      * Display a listing of the resource.
@@ -164,5 +164,13 @@ class PaymentController extends Controller
         $payment->delete();
 
         return $this->success(null);
+    }
+
+    /**
+     * Download the receipt PDF.
+     */
+    public function download(Payment $payment)
+    {
+        return $this->downloadReceipt($payment);
     }
 }

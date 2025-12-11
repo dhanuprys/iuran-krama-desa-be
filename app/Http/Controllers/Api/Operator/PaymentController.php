@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PaymentController extends Controller
 {
-    use \App\Traits\ApiResponse;
+    use \App\Traits\ApiResponse, \App\Traits\GeneratesReceiptPdf;
 
     /**
      * Display a listing of the resource.
@@ -123,6 +123,7 @@ class PaymentController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        // ... (existing update logic)
         $payment = Payment::find($id);
 
         if (!$payment) {
@@ -143,5 +144,13 @@ class PaymentController extends Controller
         $payment->update($validator->validated());
 
         return $this->success(new PaymentResource($payment->load(['invoice', 'user'])));
+    }
+
+    /**
+     * Download the receipt PDF.
+     */
+    public function download(Payment $payment)
+    {
+        return $this->downloadReceipt($payment);
     }
 }

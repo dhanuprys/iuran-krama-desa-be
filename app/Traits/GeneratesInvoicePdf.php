@@ -24,6 +24,7 @@ trait GeneratesInvoicePdf
         // Or if there is, we use it. The view handles the fallback.
 
         $pdf = Pdf::loadView('pdf.invoice', ['invoice' => $invoice]);
+        $pdf->setPaper('a5', 'landscape');
 
         $filename = 'invoice-' . ($invoice->invoice_number ?? str_pad($invoice->id, 6, '0', STR_PAD_LEFT)) . '.pdf';
 
