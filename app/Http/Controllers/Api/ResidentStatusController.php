@@ -11,6 +11,9 @@ class ResidentStatusController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         $statuses = ResidentStatus::select('id', 'name', 'contribution_amount')
@@ -23,4 +26,5 @@ class ResidentStatusController extends Controller
             'data' => $statuses
         ]);
     }
+
 }
