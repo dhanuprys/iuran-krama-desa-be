@@ -19,15 +19,12 @@ Route::prefix('v1')->group(function () {
         });
         Route::get('/profile', [AuthController::class, 'profile']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/change-password', [AuthController::class, 'changePassword']);
         Route::get('/user/has-resident', [\App\Http\Controllers\Api\AuthController::class, 'hasResident']);
         Route::get('/resident-statuses', [\App\Http\Controllers\Api\ResidentStatusController::class, 'index']);
 
         // --- Krama Routes ---
         Route::prefix('krama')->group(function () {
-            Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'profile']);
-            Route::put('/profile', [\App\Http\Controllers\Api\AuthController::class, 'updateProfile']);
-            Route::put('/change-password', [\App\Http\Controllers\Api\AuthController::class, 'changePassword']);
-            Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
             Route::get('/residents/context', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'context']);
             Route::get('/banjars', [\App\Http\Controllers\Api\Krama\BanjarController::class, 'index']);
             Route::get('/residents', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'index']);

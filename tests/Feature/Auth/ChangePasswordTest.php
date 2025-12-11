@@ -16,7 +16,7 @@ class ChangePasswordTest extends TestCase
             'password' => bcrypt('old-password'),
         ]);
 
-        $response = $this->actingAs($user)->putJson('/api/v1/krama/change-password', [
+        $response = $this->actingAs($user)->putJson('/api/v1/change-password', [
             'current_password' => 'old-password',
             'password' => 'new-password',
             'password_confirmation' => 'new-password',
@@ -39,7 +39,7 @@ class ChangePasswordTest extends TestCase
             'password' => bcrypt('old-password'),
         ]);
 
-        $response = $this->actingAs($user)->putJson('/api/v1/krama/change-password', [
+        $response = $this->actingAs($user)->putJson('/api/v1/change-password', [
             'current_password' => 'wrong-password',
             'password' => 'new-password',
             'password_confirmation' => 'new-password',
@@ -64,7 +64,7 @@ class ChangePasswordTest extends TestCase
             'password' => bcrypt('old-password'),
         ]);
 
-        $response = $this->actingAs($user)->putJson('/api/v1/krama/change-password', [
+        $response = $this->actingAs($user)->putJson('/api/v1/change-password', [
             'current_password' => 'old-password',
             'password' => 'new-password',
             'password_confirmation' => 'mismatch-password',
