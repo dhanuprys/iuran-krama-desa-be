@@ -55,12 +55,19 @@ class ResidentTest extends TestCase
             'family_status' => 'HEAD_OF_FAMILY',
             'banjar_id' => $banjar->id,
             'photo_house' => $photo,
+            'rt_number' => '010',
+            'residence_name' => 'Rumah Bali',
         ];
 
         $response = $this->actingAs($this->krama)->postJson('/api/v1/krama/residents', $data);
 
         $response->assertStatus(201)
-            ->assertJsonFragment(['validation_status' => 'PENDING', 'created_by_user_id' => $this->krama->id]);
+            ->assertJsonFragment([
+                'validation_status' => 'PENDING',
+                'created_by_user_id' => $this->krama->id,
+                'rt_number' => '010',
+                'residence_name' => 'Rumah Bali',
+            ]);
 
         $this->assertDatabaseHas('residents', ['name' => 'Krama Applicant']);
         // Check if file is stored (name is hashed so we just check existence of any file in directory or check DB column has path)

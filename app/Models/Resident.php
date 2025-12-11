@@ -28,6 +28,8 @@ class Resident extends Model
         'marital_status',
         'origin_address',
         'residential_address',
+        'rt_number',
+        'residence_name',
         'house_number',
         'location',
         'arrival_date',

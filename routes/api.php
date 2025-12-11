@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::prefix('v1')->group(function () {
+    Route::get('/meta', function () {
+        return config('app.version');
+    });
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -37,6 +40,14 @@ Route::prefix('v1')->group(function () {
 
             Route::get('/dashboard', [\App\Http\Controllers\Api\Krama\DashboardController::class, 'index']);
             Route::get('/announcements', [\App\Http\Controllers\Api\Krama\AnnouncementController::class, 'index']);
+        });
+
+        // --- Operator Routes ---
+        Route::prefix('operator')->middleware('operator')->group(function () {
+            Route::get('dashboard', [\App\Http\Controllers\Api\Operator\DashboardController::class, 'index']);
+            Route::apiResource('invoices', \App\Http\Controllers\Api\Operator\InvoiceController::class);
+            Route::apiResource('payments', \App\Http\Controllers\Api\Operator\PaymentController::class);
+            Route::apiResource('residents', \App\Http\Controllers\Api\Operator\ResidentController::class)->except(['destroy']);
         });
 
         // --- Admin Routes ---

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
@@ -51,8 +51,6 @@ class InvoiceController extends Controller
 
         $query->with([
             'resident:id,name,nik',
-            // 'resident.residentStatus', // Not strictly used in table, usually just name/nik
-            // 'resident.banjar',        // Not used in table
             'payments:id,invoice_id,amount,status'
         ]);
 
@@ -237,21 +235,5 @@ class InvoiceController extends Controller
         $invoice->update($data);
 
         return $this->success(new InvoiceResource($invoice->load(['resident', 'user'])));
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id): JsonResponse
-    {
-        $invoice = Invoice::find($id);
-
-        if (!$invoice) {
-            return $this->error('RESOURCE_NOT_FOUND');
-        }
-
-        $invoice->delete();
-
-        return $this->success(null);
     }
 }
