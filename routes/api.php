@@ -45,7 +45,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // --- Operator Routes ---
-        Route::prefix('operator')->middleware('operator')->group(function () {
+        Route::prefix('operator')->middleware('operator')->name('operator.')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Operator\DashboardController::class, 'index']);
             Route::get('invoices/{id}/download', [\App\Http\Controllers\Api\Operator\InvoiceController::class, 'download']);
             Route::apiResource('invoices', \App\Http\Controllers\Api\Operator\InvoiceController::class);
@@ -55,7 +55,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // --- Admin Routes ---
-        Route::prefix('admin')->middleware('admin')->group(function () {
+        Route::prefix('admin')->middleware('admin')->name('admin.')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
             Route::apiResource('residents', \App\Http\Controllers\Api\Admin\ResidentController::class);
             Route::post('residents/{id}/validate', [\App\Http\Controllers\Api\Admin\ResidentController::class, 'validateResident']);
@@ -69,7 +69,6 @@ Route::prefix('v1')->group(function () {
             Route::get('families', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'index']);
             Route::get('families/{family_card_number}', [\App\Http\Controllers\Api\Admin\FamilyController::class, 'show']);
             Route::apiResource('banjars', \App\Http\Controllers\Api\Admin\BanjarController::class);
-            Route::apiResource('resident-statuses', \App\Http\Controllers\Api\Admin\ResidentStatusController::class);
             Route::apiResource('resident-statuses', \App\Http\Controllers\Api\Admin\ResidentStatusController::class);
             Route::get('payments/{payment}/download', [\App\Http\Controllers\Api\Admin\PaymentController::class, 'download']);
             Route::apiResource('payments', \App\Http\Controllers\Api\Admin\PaymentController::class);
