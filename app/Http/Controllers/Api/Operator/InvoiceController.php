@@ -14,6 +14,24 @@ use Illuminate\Support\Facades\Validator;
 class InvoiceController extends Controller
 {
     use \App\Traits\ApiResponse;
+    use \App\Traits\GeneratesInvoicePdf;
+
+    // ... (existing methods)
+
+    /**
+     * Download invoice PDF.
+     */
+    public function download(string $id)
+    {
+        $invoice = Invoice::find($id);
+
+        if (!$invoice) {
+            return $this->error('RESOURCE_NOT_FOUND');
+        }
+
+        return $this->generatePdfResponse($invoice);
+    }
+
 
     /**
      * Check if resident already has an invoice for the given month and year
@@ -134,6 +152,10 @@ class InvoiceController extends Controller
             return $this->error('RESOURCE_NOT_FOUND');
         }
 
+        if ($resident->family_status !== 'HEAD_OF_FAMILY') {
+            return $this->error('VALIDATION_ERROR', ['resident_id' => ['Hanya Kepala Keluarga yang boleh memiliki tagihan.']]);
+        }
+
         // Set iuran_amount from resident's contribution amount
         $data['iuran_amount'] = $resident->residentStatus->contribution_amount;
 
@@ -208,6 +230,9 @@ class InvoiceController extends Controller
             $resident = Resident::with('residentStatus')->find($data['resident_id']);
             if (!$resident) {
                 return $this->error('RESOURCE_NOT_FOUND');
+            }
+            if ($resident->family_status !== 'HEAD_OF_FAMILY') {
+                return $this->error('VALIDATION_ERROR', ['resident_id' => ['Hanya Kepala Keluarga yang boleh memiliki tagihan.']]);
             }
             $data['iuran_amount'] = $resident->residentStatus->contribution_amount;
         }

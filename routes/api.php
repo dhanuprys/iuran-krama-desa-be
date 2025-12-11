@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/residents/{id}', [\App\Http\Controllers\Api\Krama\ResidentController::class, 'update']);
 
             Route::get('/invoices', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'index']);
+            Route::get('/invoices/{id}/download', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'download']);
             Route::get('/invoices/{id}', [\App\Http\Controllers\Api\Krama\InvoiceController::class, 'show']);
 
             Route::get('/dashboard', [\App\Http\Controllers\Api\Krama\DashboardController::class, 'index']);
@@ -45,6 +46,7 @@ Route::prefix('v1')->group(function () {
         // --- Operator Routes ---
         Route::prefix('operator')->middleware('operator')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Operator\DashboardController::class, 'index']);
+            Route::get('invoices/{id}/download', [\App\Http\Controllers\Api\Operator\InvoiceController::class, 'download']);
             Route::apiResource('invoices', \App\Http\Controllers\Api\Operator\InvoiceController::class);
             Route::apiResource('payments', \App\Http\Controllers\Api\Operator\PaymentController::class);
             Route::apiResource('residents', \App\Http\Controllers\Api\Operator\ResidentController::class)->except(['destroy']);
@@ -55,6 +57,9 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
             Route::apiResource('residents', \App\Http\Controllers\Api\Admin\ResidentController::class);
             Route::post('residents/{id}/validate', [\App\Http\Controllers\Api\Admin\ResidentController::class, 'validateResident']);
+            Route::post('invoices/bulk-preview', [\App\Http\Controllers\Api\Admin\InvoiceController::class, 'previewBulkCreate']);
+            Route::post('invoices/bulk-store', [\App\Http\Controllers\Api\Admin\InvoiceController::class, 'bulkStore']);
+            Route::get('invoices/{id}/download', [\App\Http\Controllers\Api\Admin\InvoiceController::class, 'download']);
             Route::apiResource('invoices', \App\Http\Controllers\Api\Admin\InvoiceController::class);
             Route::apiResource('announcements', \App\Http\Controllers\Api\Admin\AnnouncementController::class);
             Route::apiResource('audit-logs', \App\Http\Controllers\Api\Admin\AuditLogController::class)->only(['index', 'show']);

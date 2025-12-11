@@ -76,6 +76,11 @@ class ResidentController extends Controller
             $query->where('residents.validation_status', $request->validation_status);
         }
 
+        // Filter by family status
+        if ($request->filled('family_status')) {
+            $query->where('residents.family_status', $request->family_status);
+        }
+
         // Sort options
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
