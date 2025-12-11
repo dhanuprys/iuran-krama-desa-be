@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    //           year.month.[major.minor.patch -> continous]
+    'version' => '2025.12.0.1.0-beta',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

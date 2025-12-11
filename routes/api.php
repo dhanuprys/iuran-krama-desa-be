@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::prefix('v1')->group(function () {
     Route::get('/meta', function () {
-        return config('app.version');
+        return response()->json([
+            'version' => config('app.version'),
+        ]);
     });
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
