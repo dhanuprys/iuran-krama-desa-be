@@ -189,5 +189,13 @@ return [
         'photo_house' => 'Foto Rumah',
         'resident_photo' => 'Foto Penduduk',
         'photo_ktp' => 'Foto KTP',
+        'origin_address' => 'Alamat Asal',
+        'residential_address' => 'Alamat Domisili',
+        'rt_number' => 'Nomor RT',
+        'residence_name' => 'Perumahan',
+        'house_number' => 'Nomor Rumah',
+        'resident_status_id' => 'Status Krama',
+        'location' => 'Lokasi',
+
     ],
 ];
