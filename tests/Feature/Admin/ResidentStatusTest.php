@@ -93,6 +93,29 @@ class ResidentStatusTest extends TestCase
         $this->assertDatabaseHas('resident_statuses', array_merge(['id' => $status->id], $payload));
     }
 
+    public function test_admin_can_update_resident_status_with_long_name()
+    {
+        $status = ResidentStatus::factory()->create();
+        $longName = 'This is a very long resident status name that is definitely longer than ten characters';
+        $payload = [
+            'name' => $longName,
+            'contribution_amount' => 100000
+        ];
+
+        $response = $this->actingAs($this->admin)->putJson("/api/v1/admin/resident-statuses/{$status->id}", $payload);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'name' => $longName,
+                    'contribution_amount' => 100000
+                ]
+            ]);
+
+        $this->assertDatabaseHas('resident_statuses', array_merge(['id' => $status->id], $payload));
+    }
+
     public function test_admin_can_delete_resident_status()
     {
         $status = ResidentStatus::factory()->create();
