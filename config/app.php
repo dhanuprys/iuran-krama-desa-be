@@ -16,7 +16,7 @@ return [
     'name' => env('APP_NAME', 'Laravel'),
 
     //           year.month.[major.minor.patch -> continous]
-    'version' => '2025.12.0.2.0-beta',
+    'version' => '2025.12.0.2.2-beta',
 
     /*
     |--------------------------------------------------------------------------
